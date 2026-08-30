@@ -6,6 +6,10 @@ import datetime as dt
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def make_db():
+    assets_dir = os.path.join(BASE_DIR, "assets")
+    os.makedirs(assets_dir, exist_ok=True)
+
+
     conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
     cursor = conn.cursor()
     
