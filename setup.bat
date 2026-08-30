@@ -1,0 +1,1 @@
+(echo @echo off & echo start /b pythonw "%~dp0App\bg.pyw") > "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\BG.bat"
