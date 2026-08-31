@@ -32,7 +32,7 @@ BG.bat
 or:
 
 ```text
-python App/bg.py
+python App/bg.pyw
 ```
 
 ### Automatic Startup
@@ -40,7 +40,7 @@ python App/bg.py
 To make Arrow To-Do start automatically when Windows starts, run:
 
 ```text
-Lastup.bat
+setup.bat
 ```
 
 After setting it up, the background process will start automatically when the PC starts.
