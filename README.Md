@@ -45,12 +45,12 @@ setup.bat
 
 After setting it up, the background process will start automatically when the PC starts.
 
-If `Lastup.bat` has not been set up, you need to manually run `BG.bat` or:
+If `setup.bat` has not been set up, you need to manually run `BG.bat` or :
 
 ```text
 python App/bg.py
 ```
-
+on each pc start.
 after turning on the PC.
 
 ## Bug Report
