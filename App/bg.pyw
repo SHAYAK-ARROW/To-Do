@@ -3,7 +3,7 @@ import sqlite3 as db
 import datetime as dt
 import time
 import os 
-
+import gui
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def main():
