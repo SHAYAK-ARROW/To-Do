@@ -1,12 +1,15 @@
 import tkinter as tk
-
+import queue as q
+# eui module lage one buy one kaj gulor secuence control er jono
 # ei vari able amder state  dhore rakhbe  windo na tori kore print scanf call jate na hoy kono bhabei 
 #class use na korar jono eta 
 window = None
 output_box = None
 input_box = None
-import threading as th
 
+import threading as th
+_queue = q.Queue()
+# etarkaj ki clear oi ekhono eta bdhay ekta queue banabe jekhane amar a one by one kaj gulor ekhe krobo 
 terminal_ready = th.Event()# event  obj ana holo  eta duto th e conction korer  but ki bhabe kaj kore bujhte parchi na
 # eta bojha ki  joruri ? na hoyto amra keno lagbe janleo kaj hobe but amat ache clear noi 
 
@@ -58,9 +61,20 @@ def creat_fake_terminal():
         
         # ekhane dekho je ahge  output box auo o scrol hochilo na ekho n hobe karon bole c=hci last ta dekhao 
         output_box.see("end")          
-
+# input box clear kroe cussor ke ekdom ses e jete hoche eta bescaly ekdom shurute cursor niye jabe klaron input box e ar kono lekhai tyahkbe na cler e rpore 
         input_box.delete(0, "end")
-
+    def process_queue():
+        try:
+            # queue te kono kichu kaj ache kina dekhchi an thakle queue .ampty erro dey 
+            text = _queue.get_nowait()
+            # kaj thakle seyta output box e rakhbo tahole eta kaj control an print e konta kibhae proint hobe tar secuence  control tai ki? bodhay  tahole input enter fuction e sora sory data print na kroe ekhanbe rakhte hobe 
+            #  
+            output_box.insert("end", text)
+            output_box.see("end")# for auto scroll 
+        except q.Empty:
+            pass
+        # eta chain reaction er moto onije ke asing kroe rakhche tate 100ms por o abr jege uthe scren print korte pare 
+        window.after(100, process_queue)
 
 # enter box er sathe  enter function lin holo
     input_box.bind("<Return>", enter)
@@ -69,9 +83,18 @@ def creat_fake_terminal():
 
     terminal_ready.set()
 #  eta  event ke embeed kora holo windo te jate jana jay  windo chalu hpolo ki na 
+    # prthom bar er mtot queue ke chalukore deoya 
+    window.after(100, process_queue)
+
     # winod chau kora holo
-
     window.mainloop()
-
-
-creat_fake_terminal()
+def start_terminal():
+    # eta holo thed diye jate terinal banor agei kono bahe kono fiunctin aca;ll na hoy tar jonon
+    t = th.Thread(target=creat_fake_terminal, daemon=True)
+    # ekta thred banoholo jotkhon na jekahne fake treminal fiunctionta thakbe 
+    t.start()
+    #start kroa hol.o
+    # amra agei ei name er eka even baiye chilam globaly but ekhane keno global delire korchiana ?kaorn holo amra otaie opr read krochi ar wait krochi  otar oprbhit kroe chage krochi na 
+    terminal_ready.wait()
+def printf(text):
+    _queue.put(f"{text}\n")
