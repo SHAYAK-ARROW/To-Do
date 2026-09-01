@@ -40,17 +40,7 @@ def main():
                 dic={"id":upcoming_tasks[0][0],"task":upcoming_tasks[0][1],"descreption":upcoming_tasks[0][2],"date":upcoming_tasks[0][3]}
                 with open(os.path.join(BASE_DIR, "alert.json"), "w") as f:
                     json.dump(dic, f, indent=4)
-                task_id =upcoming_tasks[0][0]
- 
-                conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
-                cursor = conn.cursor()
-
-                os.system('python "' + os.path.join(BASE_DIR, "show.py") + '"')
-                cursor.execute("UPDATE tasks SET status = 'Completed' WHERE id = ?", (task_id,))
-
-                
-                conn.commit()
-                conn.close()
+                os.system('start python "' + os.path.join(BASE_DIR, "show.py") + '"')
                 upcoming_tasks.pop(0)
                 if upcoming_tasks:
                     pass
