@@ -2,7 +2,7 @@ import os
 import sqlite3 as db
 import datetime as dt
 # A pogram as a gift to NC Sir on teachers day from Shayak.
-import gui 
+import arrowgui  as gui
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def make_db():
