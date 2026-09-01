@@ -401,7 +401,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
             gui.printf(f"ID: {task[0]}, Name: {task[1]}, Description: {task[2]}, Deadline: {task[3]}, Status: {task[4]}")
         
 def run():
-    os.system('wmic process where "commandline like \'%bg.pyw%\'" delete >nul 2>&1')
+    os.system('powershell -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like \'*bg.pyw*\' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }" >nul 2>&1')
     os.system('start /b pythonw "' + os.path.join(BASE_DIR, "bg.pyw") + '"')
     pass
 def main():

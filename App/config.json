@@ -15,3 +15,4 @@
 
 
 }
+ch=buttton([["add",1],["eddit",2],["delete",3],["show",4],["exit",5]])
