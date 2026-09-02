@@ -1,8 +1,10 @@
 import os
 import sqlite3 as db
 import datetime as dt
+import calendar
+import gui
 # A pogram as a gift to NC Sir on teachers day from Shayak.
-import arrowgui  as gui
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def make_db():
@@ -61,11 +63,12 @@ def get_valid_datetime():
             gui.printf("Invalid input! Please enter a valid month number.")
 
     # date validetion
+    days_in_month = calendar.monthrange(task_year, task_month)[1]
     while True:
         try:
-            task_date = int(gui.scanf("Enter the task date (1-31): "))
-            if task_date < 1 or task_date > 31:
-                gui.printf("Invalid date! Must be between 1 and 31.")
+            task_date = int(gui.scanf(f"Enter the task date (1-{days_in_month}): "))
+            if task_date < 1 or task_date > days_in_month:
+                gui.printf(f"Invalid date! {task_month}/{task_year} has only {days_in_month} days.")
             elif task_year == now.year and task_month == now.month and task_date < now.day:
                 gui.printf("Error: Date cannot be from the past. Try again.")
             else:
@@ -98,7 +101,8 @@ def get_valid_datetime():
                 break
         except ValueError:
             gui.printf("Invalid input! Please enter a valid minute number.")
-    
+            
+    # 
     return f"{task_year:04d}-{task_month:02d}-{task_date:02d} {task_hour:02d}:{task_minute:02d}"
 
 def insert_task(task):
@@ -124,6 +128,9 @@ def insert_task(task):
 
 def add():
     task_name = gui.scanf("Enter the task: ").strip()
+    while not task_name:
+        gui.printf("Error: Task name cannot be empty. Try again.")
+        task_name = gui.scanf("Enter the task: ").strip()
     task_description = gui.scanf("Enter the task description: ").strip()
     
     task_deadline = get_valid_datetime()
@@ -145,6 +152,7 @@ def delete():
         gui.printf("Error: Invalid input! Please enter a valid number for Task ID.")
         return
 
+    conn = None
     try:
         conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
         cursor = conn.cursor()
@@ -163,8 +171,8 @@ def delete():
     except db.Error as e:
         gui.printf(f"\nDatabase Error: {e}")
     finally:
-
-        conn.close()
+        if conn:
+            conn.close()
 def eddite():
     gui.printf("\n--- EDIT TASK ---")
     
@@ -250,16 +258,16 @@ Enter 4 for SHOW TASKS BY DEADLINE
 ''')
     while True:
         try:
-            chiose = int(gui.scanf("Enter your chiose: "))
-            if 1 <= chiose <= 4:
+            chiose=int(gui.scanf("Enter your chiose: "))
+            if 1<=chiose<=4:
                 break
             else:
                 raise ValueError
         except ValueError:
             gui.printf("Opps! wrong input. Try again!")
-    if chiose == 1:
+    if chiose==1:
         show_all()
-    elif chiose == 2:
+    elif chiose==2:
         conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM tasks WHERE status = 'Pending'")
@@ -268,16 +276,19 @@ Enter 4 for SHOW TASKS BY DEADLINE
         conn.close()
         for task in pending_tasks:
             gui.printf(f"ID: {task[0]}, Name: {task[1]}, Description: {task[2]}, Deadline: {task[3]}, Status: {task[4]}")
-    elif chiose == 3:
+        
+    
+        
+    elif chiose==3:
         conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM tasks WHERE status = 'Completed'")
         completed_tasks = cursor.fetchall()
         conn.close()
         gui.printf("\nCompleted Tasks:")
-        for task in completed_tasks:
+        for task in completed_tasks:   
             gui.printf(f"ID: {task[0]}, Name: {task[1]}, Description: {task[2]}, Deadline: {task[3]}, Status: {task[4]}")
-    elif chiose == 4:
+    elif chiose==4:
         while True:
             try:
                 task_year = int(gui.scanf("Enter the task year: "))
@@ -285,6 +296,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
             except ValueError:
                 gui.printf("Invalid input! Please enter a valid year number.")
 
+     # month
         while True:
             try:
                 task_month = int(gui.scanf("Enter the task month (1-12): "))
@@ -295,6 +307,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
             except ValueError:
                 gui.printf("Invalid input! Please enter a valid month number.")
 
+        # date
         while True:
             try:
                 task_date = int(gui.scanf("Enter the task date (1-31): "))
@@ -305,6 +318,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
             except ValueError:
                 gui.printf("Invalid input! Please enter a valid date number.")
 
+        # hour
         while True:
             try:
                 task_hour = int(gui.scanf("Enter the task hour (0-23): "))
@@ -315,6 +329,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
             except ValueError:
                 gui.printf("Invalid input! Please enter a valid hour number.")
 
+        # minitues
         while True:
             try:
                 task_minute = int(gui.scanf("Enter the task minute (0-59): "))
@@ -324,25 +339,28 @@ Enter 4 for SHOW TASKS BY DEADLINE
                     break
             except ValueError:
                 gui.printf("Invalid input! Please enter a valid minute number.")
+                
         
-        deadline1 = f"{task_year:04d}-{task_month:02d}-{task_date:02d} {task_hour:02d}:{task_minute:02d}"
+        deadline1=f"{task_year:04d}-{task_month:02d}-{task_date:02d} {task_hour:02d}:{task_minute:02d}"
         gui.printf(f"Do you want to show a range ? (y/n): ")
         while True:
-            chiose1 = gui.scanf("").strip().lower()
+            chiose1=gui.scanf().strip().lower()
             if chiose1 in ['y', 'n']:
                 break
             else:
                 gui.printf("Invalid input! Please enter 'y' or 'n'.")
         conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
         cursor = conn.cursor()
-        
-        if chiose1 == 'y':
+                    
+        if chiose1=='y':
+
             while True:
                 try:
                     task_year = int(gui.scanf("Enter the task year: "))
                     break
                 except ValueError:
                     gui.printf("Invalid input! Please enter a valid year number.")
+
 
             while True:
                 try:
@@ -364,6 +382,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
                 except ValueError:
                     gui.printf("Invalid input! Please enter a valid date number.")
 
+            
             while True:
                 try:
                     task_hour = int(gui.scanf("Enter the task hour (0-23): "))
@@ -374,6 +393,7 @@ Enter 4 for SHOW TASKS BY DEADLINE
                 except ValueError:
                     gui.printf("Invalid input! Please enter a valid hour number.")
 
+            
             while True:
                 try:
                     task_minute = int(gui.scanf("Enter the task minute (0-59): "))
@@ -383,19 +403,24 @@ Enter 4 for SHOW TASKS BY DEADLINE
                         break
                 except ValueError:
                     gui.printf("Invalid input! Please enter a valid minute number.")
+                    
 
-            deadline2 = f"{task_year:04d}-{task_month:02d}-{task_date:02d} {task_hour:02d}:{task_minute:02d}"
+            deadline2=f"{task_year:04d}-{task_month:02d}-{task_date:02d} {task_hour:02d}:{task_minute:02d}"
+            
+            # dedeline 
             cursor.execute("""
                 SELECT * FROM tasks 
                 WHERE date_time BETWEEN ? AND ?
             """, (deadline1, deadline2))
+            
+            #
             tasks_list = cursor.fetchall()
         else:
             cursor.execute("""
                 SELECT * FROM tasks 
                 WHERE date_time = ?
             """, (deadline1,))
-            tasks_list = cursor.fetchall()
+            tasks_list=cursor.fetchall()
         conn.close()
         for task in tasks_list:
             gui.printf(f"ID: {task[0]}, Name: {task[1]}, Description: {task[2]}, Deadline: {task[3]}, Status: {task[4]}")
@@ -446,7 +471,7 @@ def main():
             show()
         elif chiose==5:
             run()
-        clear = gui.scanf("YOUR PROSESS COMPLETED SUCCESSFULLY")
+        clear=gui.scanf("YOUR PROSESS COMPLETED SUCCESSFULLY")
         gui.clear()
 
 
