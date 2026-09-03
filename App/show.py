@@ -3,6 +3,7 @@ import os
 import time
 import datetime as dt
 import sqlite3 as db
+import arrowgui as gui
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -34,18 +35,18 @@ def get_new_datetime():
     now = dt.datetime.now()
     while True:
         try:
-            year = int(input("Enter new year: "))
-            month = int(input("Enter new month (1-12): "))
-            date = int(input("Enter new date (1-31): "))
-            hour = int(input("Enter new hour (0-23): "))
-            minute = int(input("Enter new minute (0-59): "))
+            year = int(gui.scanf("Enter new year: "))
+            month = int(gui.scanf("Enter new month (1-12): "))
+            date = int(gui.scanf("Enter new date (1-31): "))
+            hour = int(gui.scanf("Enter new hour (0-23): "))
+            minute = int(gui.scanf("Enter new minute (0-59): "))
             new_dt = dt.datetime(year, month, date, hour, minute)
             if new_dt <= now:
-                print("Error: New deadline must be in the future. Try again.")
+                gui.printf("Error: New deadline must be in the future. Try again.")
                 continue
             return new_dt.strftime("%Y-%m-%d %H:%M")
         except ValueError:
-            print("Invalid input! Please enter valid numbers for a real date/time.")
+            gui.printf("Invalid input! Please enter valid numbers for a real date/time.")
 
 
 def mark_completed(task_id):
@@ -63,10 +64,11 @@ def reassign_task(task_id):
     cursor.execute("UPDATE tasks SET date_time = ? WHERE id = ?", (new_time, task_id))
     conn.commit()
     conn.close()
-    print(f"\nTask ID {task_id} rescheduled to {new_time}.")
+    gui.printf(f"\nTask ID {task_id} rescheduled to {new_time}.")
 
 
 def main():
+    gui.start_terminal()
     # alert.json ekbaroi porchi, memory te rakhchi -- bg.pyw pore file
     # overwrite korle amader chalman popup-er upor kono probhab porbe na
     with open(os.path.join(BASE_DIR, "alert.json"), "r") as f:
@@ -80,22 +82,22 @@ def main():
 
     while True:
         is_overdue = task_dt < dt.datetime.now()
-        print(build_message(task_id, task_name, task_description, date_time_str, is_overdue))
+        gui.printf(build_message(task_id, task_name, task_description, date_time_str, is_overdue))
 
-        choice = input(
+        choice = gui.scanf(
             "Enter OK if done, R to reassign a new time, "
             "or anything else to be reminded again in 10 minutes: "
         ).strip().lower()
 
         if choice == "ok":
             mark_completed(task_id)
-            print("Task marked as completed. Bye!")
+            gui.printf("Task marked as completed. Bye!")
             break
         elif choice == "r":
             reassign_task(task_id)
             break
         else:
-            print("Okay, I'll remind you again in 10 minutes...")
+            gui.printf("Okay, I'll remind you again in 10 minutes...")
             time.sleep(600)
 
 
