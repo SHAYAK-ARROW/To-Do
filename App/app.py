@@ -2,7 +2,7 @@ import os
 import sqlite3 as db
 import datetime as dt
 import calendar
-import gui
+import arrowgui as gui
 # A pogram as a gift to NC Sir on teachers day from Shayak.
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -140,6 +140,7 @@ def add():
     insert_task(task)
     
     gui.printf(f"\nTask Added Successfully with Deadline: {task_deadline}")
+    run()
  
 
 def delete():
@@ -217,18 +218,15 @@ def eddite():
 
     
     cursor.execute("""
-        INSERT INTO tasks (id, task_name, task_description, date_time, status)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(id) 
-        DO UPDATE SET task_name = excluded.task_name,
-                      task_description = excluded.task_description, 
-                      date_time = excluded.date_time, 
-                      status = excluded.status
-    """, (t_id, t_name, t_desc, t_time, old_status))
+        UPDATE tasks
+        SET task_name = ?, task_description = ?, date_time = ?, status = ?
+        WHERE id = ?
+    """, (t_name, t_desc, t_time, old_status, t_id))
     
     conn.commit()
     conn.close()
     gui.printf(f"\nTask ID {t_id} successfully updated!")
+    run()
     
 def show_all():
     conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
@@ -292,7 +290,10 @@ Enter 4 for SHOW TASKS BY DEADLINE
         while True:
             try:
                 task_year = int(gui.scanf("Enter the task year: "))
-                break
+                if task_year < 2000 or task_year > 2100:
+                    gui.printf("Invalid year! Must be between 2000 and 2100.")
+                else:
+                    break
             except ValueError:
                 gui.printf("Invalid input! Please enter a valid year number.")
 
@@ -357,7 +358,10 @@ Enter 4 for SHOW TASKS BY DEADLINE
             while True:
                 try:
                     task_year = int(gui.scanf("Enter the task year: "))
-                    break
+                    if task_year < 2000 or task_year > 2100:
+                        gui.printf("Invalid year! Must be between 2000 and 2100.")
+                    else:
+                        break
                 except ValueError:
                     gui.printf("Invalid input! Please enter a valid year number.")
 
@@ -448,9 +452,10 @@ def main():
     _____________________________________
 
     '''
-        gui.printf(welcome_sms)
+
 
         while True:
+            gui.printf(welcome_sms)
             try:
                 chiose=int(gui.scanf("Enter your chiose: "))
                 if 0<=chiose<=5:

@@ -1,6 +1,8 @@
+import os
 import queue as q
 import threading as th
 import tkinter as tk
+
 
 window = None
 output_box = None
@@ -19,17 +21,22 @@ def creat_fake_terminal():
     window = tk.Tk()
     window.title("ARROW TO-DO MANAGER")
 
-    scren_w = window.winfo_screenwidth()
-    scren_h = window.winfo_screenheight()
-
-    w = int(scren_w * 0.7)
-    h = int(scren_h * 0.7)
-    window.geometry(f"{w}x{h}")
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    width = int(screen_width * 0.7)
+    height = int(screen_height * 0.7)
+    window.geometry(f"{width}x{height}")
 
     input_frame = tk.Frame(window, bg="black")
     input_frame.pack(side="bottom", fill="x")
 
-    prompt_label = tk.Label(input_frame, text=">_ ", bg="black", fg="lime", font=("Consolas", 16))
+    prompt_label = tk.Label(
+        input_frame,
+        text=">_ ",
+        bg="black",
+        fg="lime",
+        font=("Consolas", 16),
+    )
     prompt_label.pack(side="left")
 
     input_box = tk.Entry(
@@ -47,12 +54,12 @@ def creat_fake_terminal():
     output_box.pack(fill="both", expand=True)
 
     def enter(event):
+        global _last_input
+
         user_text = input_box.get()
         output_box.insert("end", f">_: {user_text}\n")
         output_box.see("end")
         input_box.delete(0, "end")
-
-        global _last_input
         _last_input = user_text
         input_ready.set()
 
@@ -70,15 +77,20 @@ def creat_fake_terminal():
 
         window.after(100, process_queue)
 
+    def on_close():
+        window.destroy()
+        os._exit(0)
+
     input_box.bind("<Return>", enter)
     terminal_ready.set()
     window.after(100, process_queue)
+    window.protocol("WM_DELETE_WINDOW", on_close)
     window.mainloop()
 
 
 def start_terminal():
-    t = th.Thread(target=creat_fake_terminal, daemon=True)
-    t.start()
+    terminal_thread = th.Thread(target=creat_fake_terminal, daemon=True)
+    terminal_thread.start()
     terminal_ready.wait()
 
 
@@ -87,13 +99,14 @@ def clear():
 
 
 def printf(*args, sep=" ", end="\n"):
-    text = sep.join(str(a) for a in args)
+    text = sep.join(str(arg) for arg in args)
     _queue.put(text + end)
 
 
 def scanf(prompt=""):
     if prompt:
         printf(prompt)
+
     input_ready.clear()
     input_ready.wait()
     return _last_input

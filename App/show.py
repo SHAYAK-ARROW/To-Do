@@ -69,16 +69,28 @@ def reassign_task(task_id):
 
 def main():
     gui.start_terminal()
+
     # alert.json ekbaroi porchi, memory te rakhchi -- bg.pyw pore file
     # overwrite korle amader chalman popup-er upor kono probhab porbe na
-    with open(os.path.join(BASE_DIR, "alert.json"), "r") as f:
-        data = json.load(f)
+    try:
+        with open(os.path.join(BASE_DIR, "alert.json"), "r") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        gui.printf(f"Error: alert.json couldn't be read ({e}). Nothing to show, closing.")
+        time.sleep(3)
+        return
 
     task_id = data.get("id")
     task_name = data.get("task")
     task_description = data.get("descreption")
     date_time_str = data.get("date")
-    task_dt = dt.datetime.strptime(date_time_str, "%Y-%m-%d %H:%M")
+
+    try:
+        task_dt = dt.datetime.strptime(date_time_str, "%Y-%m-%d %H:%M")
+    except (ValueError, TypeError) as e:
+        gui.printf(f"Error: alert.json has an invalid date ({e}). Closing.")
+        time.sleep(3)
+        return
 
     while True:
         is_overdue = task_dt < dt.datetime.now()

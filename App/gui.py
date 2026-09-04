@@ -6,7 +6,7 @@ import queue as q
 window = None
 output_box = None
 input_box = None
-
+import os
 import threading as th
 _queue = q.Queue()
 _clear_flag = th.Event()# ekta event bano holo eta amder claer krote kaje lagbe 
@@ -116,7 +116,12 @@ etar ager code ekhane amder kono prompt chilo na ipput box e rpase tai nutun son
 #  eta  event ke embeed kora holo windo te jate jana jay  windo chalu hpolo ki na 
     # prthom bar er mtot queue ke chalukore deoya 
     window.after(100, process_queue)
-
+# ei function er daito windo kete dile windo ta destroy kora ar poseezs bondho kora acha  tobe eta cal korlei emon hobe window er kata buton diye call hobe eta 
+    def on_close():
+        window.destroy()
+        os._exit(0)
+    # ETA SET KORA HOCHE KARON WINDO TA KETE DILEO MAIN PYTHON CODE CHOLTEI THAKCHE  BACK E TO ETA JATE NA HOY TAI KORA HOLO 
+    window.protocol("WM_DELETE_WINDOW", on_close)
     # winod chau kora holo
     window.mainloop()
 def start_terminal():
