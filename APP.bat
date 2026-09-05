@@ -1,2 +1,2 @@
 @echo off
-python "%~dp0App\app.py"
+start pythonw "%~dp0App\app.pyw"

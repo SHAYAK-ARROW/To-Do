@@ -52,6 +52,15 @@ def get_new_datetime():
 def mark_completed(task_id):
     conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
     cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_name TEXT NOT NULL,
+            task_description TEXT,
+            date_time TEXT NOT NULL,
+            status TEXT NOT NULL
+        )
+    """)
     cursor.execute("UPDATE tasks SET status = 'Completed' WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()
@@ -61,6 +70,15 @@ def reassign_task(task_id):
     new_time = get_new_datetime()
     conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
     cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_name TEXT NOT NULL,
+            task_description TEXT,
+            date_time TEXT NOT NULL,
+            status TEXT NOT NULL
+        )
+    """)
     cursor.execute("UPDATE tasks SET date_time = ? WHERE id = ?", (new_time, task_id))
     conn.commit()
     conn.close()
@@ -92,25 +110,29 @@ def main():
         time.sleep(3)
         return
 
-    while True:
-        is_overdue = task_dt < dt.datetime.now()
-        gui.printf(build_message(task_id, task_name, task_description, date_time_str, is_overdue))
+    is_overdue = task_dt < dt.datetime.now()
+    gui.printf(build_message(task_id, task_name, task_description, date_time_str, is_overdue))
 
-        choice = gui.scanf(
-            "Enter OK if done, R to reassign a new time, "
-            "or anything else to be reminded again in 10 minutes: "
-        ).strip().lower()
+    choice = gui.scanf(
+        "Enter OK if done, R to reassign a new time, "
+        "or anything else to close (bg.pyw will remind you again shortly): "
+    ).strip().lower()
 
-        if choice == "ok":
-            mark_completed(task_id)
-            gui.printf("Task marked as completed. Bye!")
-            break
-        elif choice == "r":
-            reassign_task(task_id)
-            break
-        else:
-            gui.printf("Okay, I'll remind you again in 10 minutes...")
-            time.sleep(600)
+    if choice == "ok":
+        mark_completed(task_id)
+        gui.printf("Task marked as completed. Bye!")
+        time.sleep(2)
+    elif choice == "r":
+        reassign_task(task_id)
+        time.sleep(2)
+    else:
+        # bg.pyw nijei aabar reminder dekhabe (nijer cooldown-e), tai
+        # eikhane show.pyw-r nijer kono internal retry loop rakha holo na --
+        # eta rakhle duijon-e mile duplicate/stacked window toiri korto
+        gui.printf("Okay, closing. bg.pyw will remind you again shortly.")
+        time.sleep(2)
+    # kono explicit return dorkar nei, function ekhaneo shesh hoye jabe,
+    # ar shobar sheshe main.py process-o bondho hoye jabe
 
 
 if __name__ == "__main__":

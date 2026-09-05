@@ -3,12 +3,23 @@ import sqlite3 as db
 import datetime as dt
 import time
 import os 
-
+def kill_other_bg_instances():
+    my_pid = os.getpid()  
+    ps_command = (
+        f'Get-CimInstance Win32_Process | '
+        f'Where-Object {{ $_.CommandLine -like \'*bg.pyw*\' -and $_.ProcessId -ne {my_pid} }} | '
+        f'ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force }}'
+    )
+    os.system(f'powershell -Command "{ps_command}" >nul 2>&1')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def main():
-    while True:
+    # eta ekbaroi cholbe, main() shuru howar shomoy -- loop-er bhitore rakhle
+    # protibar cycle-e (protita 10 minit-e, ba overdue thakle aro ghono ghono)
+    # bar bar cholto, jeta onaboshok, tai loop-er baire ana holo
+    kill_other_bg_instances()
 
+    while True:
         try:
             conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
             cursor = conn.cursor()
@@ -74,13 +85,19 @@ def main():
                 }
                 with open(os.path.join(BASE_DIR, "alert.json"), "w") as f:
                     json.dump(dic, f, indent=4)
-                os.system('start python "' + os.path.join(BASE_DIR, "show.py") + '"')
+                os.system('start pythonw "' + os.path.join(BASE_DIR, "show.pyw") + '"')
                 upcoming_tasks.pop(0)
                 if upcoming_tasks:
                     pass
                 else:
                     break
 
+            # inner loop shesh hoyeche -- kintu popup-e thaka task-er status
+            # ekhono DB-te "Pending"-i (user "OK" na dile), tai outer loop
+            # ekhoni abar DB porle sei same task-ke abar dhorbe, notun popup
+            # khub tarataribi khule jabe. Tai eta ekta cooldown, jate ekoi
+            # task-er jonno bar bar (flooding-er moto) notun window na khole
+            time.sleep(30)
         else:
 
             time.sleep(600)

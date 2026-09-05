@@ -2,7 +2,7 @@ import os
 import sqlite3 as db
 import datetime as dt
 import calendar
-import arrowgui as gui
+import gui
 # A pogram as a gift to NC Sir on teachers day from Shayak.
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -140,7 +140,6 @@ def add():
     insert_task(task)
     
     gui.printf(f"\nTask Added Successfully with Deadline: {task_deadline}")
-    run()
  
 
 def delete():
@@ -226,7 +225,6 @@ def eddite():
     conn.commit()
     conn.close()
     gui.printf(f"\nTask ID {t_id} successfully updated!")
-    run()
     
 def show_all():
     conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
@@ -410,7 +408,14 @@ Enter 4 for SHOW TASKS BY DEADLINE
                     
 
             deadline2=f"{task_year:04d}-{task_month:02d}-{task_date:02d} {task_hour:02d}:{task_minute:02d}"
-            
+
+            # deadline2 ke deadline1-er theke por hote hobe, nahole BETWEEN
+            # query khali/vul result debe. Jodi ulto kore dey (end age, start
+            # pore), amra nije theke sathe sathe swap kore nicchi
+            if deadline2 < deadline1:
+                gui.printf("Note: end date was before start date, swapping them.")
+                deadline1, deadline2 = deadline2, deadline1
+
             # dedeline 
             cursor.execute("""
                 SELECT * FROM tasks 
@@ -452,10 +457,9 @@ def main():
     _____________________________________
 
     '''
-
+        gui.printf(welcome_sms)
 
         while True:
-            gui.printf(welcome_sms)
             try:
                 chiose=int(gui.scanf("Enter your chiose: "))
                 if 0<=chiose<=5:

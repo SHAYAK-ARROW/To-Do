@@ -15,7 +15,7 @@ input_ready = th.Event()
 _last_input = None
 
 
-def creat_fake_terminal():
+def creat_fake_terminal(terminal_bg="black",top_most=False):
     global window, output_box, input_box
 
     window = tk.Tk()
@@ -50,7 +50,12 @@ def creat_fake_terminal():
     )
     input_box.pack(side="left", fill="x", expand=True)
 
-    output_box = tk.Text(window, bg="black", fg="white", font=("Consolas", 18))
+    output_box = tk.Text(
+        window,
+        bg=terminal_bg,
+        fg="white",
+        font=("Consolas", 18)
+    )
     output_box.pack(fill="both", expand=True)
 
     def enter(event):
@@ -65,9 +70,16 @@ def creat_fake_terminal():
 
     def process_queue():
         try:
-            text = _queue.get_nowait()
-            output_box.insert("end", text)
+            text, color = _queue.get_nowait()
+
+
+            output_box.tag_configure(color, foreground=color)
+
+        
+            output_box.insert("end", text, color)
+
             output_box.see("end")
+
         except q.Empty:
             pass
 
@@ -85,11 +97,17 @@ def creat_fake_terminal():
     terminal_ready.set()
     window.after(100, process_queue)
     window.protocol("WM_DELETE_WINDOW", on_close)
+    
+    window.configure(bg=terminal_bg)
     window.mainloop()
 
 
-def start_terminal():
-    terminal_thread = th.Thread(target=creat_fake_terminal, daemon=True)
+def start_terminal(terminal_bg="black"):
+    terminal_thread = th.Thread(
+        target=creat_fake_terminal,
+        args=(terminal_bg,),
+        daemon=True
+    )
     terminal_thread.start()
     terminal_ready.wait()
 
@@ -98,9 +116,11 @@ def clear():
     _clear_flag.set()
 
 
-def printf(*args, sep=" ", end="\n"):
-    text = sep.join(str(arg) for arg in args)
-    _queue.put(text + end)
+def printf(*args, sep=" ", end="\n", color="white"):
+    text_put = sep.join(str(arg) for arg in args)
+
+
+    _queue.put((text_put + end, color))
 
 
 def scanf(prompt=""):
