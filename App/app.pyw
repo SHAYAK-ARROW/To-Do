@@ -191,7 +191,6 @@ def eddite():
     
     cursor.execute("SELECT task_name, task_description, date_time, status FROM tasks WHERE id = ?", (t_id,))
     old_task = cursor.fetchone()
-    run()
     
     
     if not old_task:
@@ -228,6 +227,7 @@ def eddite():
     conn.commit()
     conn.close()
     gui.printf(f"\nTask ID {t_id} successfully updated!")
+    run()
     
 def show_all():
     conn = db.connect(os.path.join(BASE_DIR, "assets", "todo.db"))
