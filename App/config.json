@@ -1,7 +1,7 @@
 {
     "app_name": "ARROW TO-DO",
-    "version": "0.0.1",
-    "ux":"fake terminal like gui ",
+    "version": "1.0.0",
+    "ux":"Fake and Castomize Gui Terminal ",
     "v_control": "git",
     "show":"github",
     "outher": "Arrow",
@@ -15,4 +15,3 @@
 
 
 }
-ch=buttton([["add",1],["eddit",2],["delete",3],["show",4],["exit",5]])
