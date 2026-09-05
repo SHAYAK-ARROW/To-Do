@@ -9,13 +9,15 @@ output_box = None
 input_box = None
 
 _queue = q.Queue()
-_clear_flag = th.Event()
+_CLEAR_SENTINEL = object()  # ekta bishesh "chinho" object, jeta clear()-er
+                            # nirdesh bojhate use hobe, printf-er (text, color)
+                            # tuple-er shathe kokhono gulie jabe na
 terminal_ready = th.Event()
 input_ready = th.Event()
 _last_input = None
 
 
-def creat_fake_terminal(terminal_bg="black",top_most=False):
+def creat_fake_terminal(terminal_bg="black", top_most=False):
     global window, output_box, input_box
 
     window = tk.Tk()
@@ -69,23 +71,24 @@ def creat_fake_terminal(terminal_bg="black",top_most=False):
         input_ready.set()
 
     def process_queue():
+        # ekbare queue-te je koyta item jomeche, shobgulo ekhon-i drain
+        # kore fela hoy -- age shudhu 1-ta item processed hoto protibar,
+        # tate onek printf() ekjaygay call hole output dekhate deri hoto
         try:
-            text, color = _queue.get_nowait()
+            while True:
+                item = _queue.get_nowait()
 
-
-            output_box.tag_configure(color, foreground=color)
-
-        
-            output_box.insert("end", text, color)
-
-            output_box.see("end")
-
+                if item is _CLEAR_SENTINEL:
+                    # eta clear()-er nirdesh, ekhon printf-er shathe
+                    # SHOMOI queue-te thakay, order shobshomoy thik thakbe
+                    output_box.delete("1.0", "end")
+                else:
+                    text, color = item
+                    output_box.tag_configure(color, foreground=color)
+                    output_box.insert("end", text, color)
+                    output_box.see("end")
         except q.Empty:
             pass
-
-        if _clear_flag.is_set():
-            output_box.delete("1.0", "end")
-            _clear_flag.clear()
 
         window.after(100, process_queue)
 
@@ -97,7 +100,7 @@ def creat_fake_terminal(terminal_bg="black",top_most=False):
     terminal_ready.set()
     window.after(100, process_queue)
     window.protocol("WM_DELETE_WINDOW", on_close)
-    
+
     window.configure(bg=terminal_bg)
     window.mainloop()
 
@@ -113,19 +116,19 @@ def start_terminal(terminal_bg="black"):
 
 
 def clear():
-    _clear_flag.set()
+    # sorasori output_box touch na kore, ekhon _queue-teই ekta special
+    # marker pathano hoy -- eivabe printf()-er shathe order-e conflict hoy na
+    _queue.put(_CLEAR_SENTINEL)
 
 
 def printf(*args, sep=" ", end="\n", color="white"):
     text_put = sep.join(str(arg) for arg in args)
-
-
     _queue.put((text_put + end, color))
 
 
-def scanf(prompt=""):
+def scanf(prompt="", color="white"):
     if prompt:
-        printf(prompt)
+        printf(prompt, color=color)
 
     input_ready.clear()
     input_ready.wait()
