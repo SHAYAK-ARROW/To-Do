@@ -140,6 +140,7 @@ def add():
     insert_task(task)
     
     gui.printf(f"\nTask Added Successfully with Deadline: {task_deadline}")
+    run()
  
 
 def delete():
@@ -173,6 +174,7 @@ def delete():
     finally:
         if conn:
             conn.close()
+    run()
 def eddite():
     gui.printf("\n--- EDIT TASK ---")
     
@@ -189,6 +191,7 @@ def eddite():
     
     cursor.execute("SELECT task_name, task_description, date_time, status FROM tasks WHERE id = ?", (t_id,))
     old_task = cursor.fetchone()
+    run()
     
     
     if not old_task:
